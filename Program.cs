@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Numerics;
 
 internal class Program
 {
@@ -9,25 +8,28 @@ internal class Program
         game.Run();
     }
 }
+
 internal class Game
 {
     private int width;
     private int height;
-    private int foodX;
-    private int foodY;
     private Player player;
+    private Food food;
 
     public void Run()
     {
         Initialize();
         Console.WriteLine("Game started...");
         player.Draw();
-        PlaceAndDrawFood();
+        food.Draw();
 
         while (true)
         {
             HandleInput();
+            CheckCollision();
+            Console.Clear();
             player.Draw();
+            food.Draw();
             System.Threading.Thread.Sleep(100); // Delay to slow down the loop
         }
     }
@@ -38,17 +40,7 @@ internal class Game
         width = Console.WindowWidth - 5;
         height = Console.WindowHeight - 1;
         player = new Player(width / 2, height / 2);
-        foodX = 0;
-        foodY = 0;
-    }
-
-    private void PlaceAndDrawFood()
-    {
-        Random random = new Random();
-        foodX = random.Next(0, width);
-        foodY = random.Next(0, height);
-        Console.SetCursorPosition(foodX, foodY);
-        Console.Write('O'); // Symbol representing the food
+        food = new Food(width, height);
     }
 
     private void HandleInput()
@@ -59,8 +51,15 @@ internal class Game
             player.Move(key, width, height);
         }
     }
-}
 
+    private void CheckCollision()
+    {
+        if (player.X == food.X && player.Y == food.Y)
+        {
+            food.Place(width, height); // Place new food
+        }
+    }
+}
 
 internal class Player
 {
@@ -101,5 +100,25 @@ internal class Player
 
 internal class Food
 {
+    public int X { get; private set; }
+    public int Y { get; private set; }
+    private Random random;
 
+    public Food(int width, int height)
+    {
+        random = new Random();
+        Place(width, height);
+    }
+
+    public void Place(int width, int height)
+    {
+        X = random.Next(0, width);
+        Y = random.Next(0, height);
+    }
+
+    public void Draw()
+    {
+        Console.SetCursorPosition(X, Y);
+        Console.Write('O'); // Symbol representing the food
+    }
 }
